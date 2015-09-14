@@ -1,7 +1,9 @@
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.ArrayList;
 
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
@@ -13,11 +15,8 @@ public class DataParse {
 	public static JsonReader readUrl(String urlString) throws IOException {
 		// TODO Auto-generated method stub
 	    URL url= new URL(urlString); //just a string
-	    
 	    Reader jsonReader = new InputStreamReader(url.openStream());
-
 	    JsonReader JSONReader = new JsonReader(jsonReader);
-	    
 	    return JSONReader;
 	    
 	    /*
@@ -34,7 +33,7 @@ public class DataParse {
 	} 
 	
 
-	public static Author getAuthorPosts(String url) throws IOException{
+	public static Author getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		JsonReader JSONReader = readUrl(url);
 		JSONReader.beginObject();
 		Author author = null;
@@ -73,38 +72,21 @@ public class DataParse {
 		
 	}
 
-	public static Author parseAuthor(JsonReader JSONReader) throws IOException{
+	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		
 		JSONReader.beginObject();
-		
-		String name = null, 
-			position = null, 
-			email = null, 
-			description = null;
+		Author author = new Author();
 		
 		while (JSONReader.hasNext()) {
-			
-			String key = JSONReader.nextName(); 
-			
-			if (key.equals("name")){
-				name = JSONReader.nextString();
-			}
-			else if (key.equals("nickname")){
-				position = JSONReader.nextString();
-			}
-			else if(key.equals("description")) {
-		        description = JSONReader.nextString(); 
-		     }
-			else if(key.equals("email")){
-				email = JSONReader.nextString();
-			}
-			else{
+			String key = JSONReader.nextName();
+			if (getDeclaredFieldNames(author).contains(key)) {
+				String val = JSONReader.nextString();
+				author.getClass().getDeclaredField(key).set(author, val);
+			} else {
 				JSONReader.skipValue();
 			}
-
 		}
 		JSONReader.endObject();
-		Author author = new Author(name, position, email,description);
 		System.out.println(author);
 		return author;
 		
@@ -144,7 +126,7 @@ public class DataParse {
 			}
 		JSONReader.endObject();	
 		Post post = new Post(title, content, URL, excerpt, date);
-		System.out.println(post);
+//		System.out.println(post);
 		return post;
 	}
 	/*
@@ -173,7 +155,16 @@ public class DataParse {
 		return newTagsOrCategories;
 	}*/
 	
-	public static void main(String[] args) throws IOException {
+	private static ArrayList<String> getDeclaredFieldNames(Object obj) {
+		ArrayList<String> names = new ArrayList<String>();
+		for (Field field : obj.getClass().getDeclaredFields()) {
+			names.add(field.getName());
+		}
+		return names;
+		
+	}
+	
+	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		// TODO Auto-generated method stub
 		/*
 		System.out.println(readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung"));
@@ -181,5 +172,4 @@ public class DataParse {
 	    System.out.println(getAuthorPosts(json));*/
 		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
 	}
-
 }

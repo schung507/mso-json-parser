@@ -5,6 +5,10 @@ public class Author {
 		position, 
 		email, 
 		description;
+	
+	public Author() {
+		
+	}
 		
 	public Author(String _name, String _position, String _email, String _description){
 		name = _name;
@@ -12,6 +16,8 @@ public class Author {
 		email = _email;
 		description = _description;
 	}
+
+
 	
 	@Override
 	public String toString() {
