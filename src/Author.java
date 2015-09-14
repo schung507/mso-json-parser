@@ -19,11 +19,9 @@ public class Author {
 		description = _description;
 	}
 
-	public Author(Author oldAuthor){
-		this.name = oldAuthor.name;
-		this.nickname = oldAuthor.nickname;
-		this.email = oldAuthor.email;
-		this.description = oldAuthor.description;
+	
+	public void setNumposts(int _numposts) {
+		numposts = _numposts;
 	}
 
 	
