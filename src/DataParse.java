@@ -5,6 +5,8 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 
@@ -34,40 +36,41 @@ public class DataParse {
 
 	public static Author getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		JsonReader JSONReader = readUrl(url);
-		JSONReader.beginObject();
+		JsonParser parser = new JsonParser();
+		int pages = parser.parse(JSONReader).getAsJsonObject().get("pages").getAsInt();
+		int count = 0;
 		Author author = null;
-		Post[] posts = null;
-		int count;
-		int pages;
+		ArrayList<Post> posts = new ArrayList<Post>();
 		
-		while (JSONReader.hasNext()) {
-			
-			String key = JSONReader.nextName();
-//			System.out.println(key);
-			
-			if (key.equals("count")){
-				count = JSONReader.nextInt();
-			}
-			else if (key.equals("pages")){
-				pages = JSONReader.nextInt();
-			}
-			else if(key.equals("author")) {
-		        author = parseAuthor(JSONReader); 
-		     }
-			else if(key.equals("posts")){
-				
-				JSONReader.beginArray();
-				while(JSONReader.hasNext()){
-					parsePost(JSONReader);
-					
+		int pageCounter = 1;
+		while (pageCounter <= pages) {
+			JSONReader = readUrl(String.format("%s&page=%d", url, pageCounter));
+			JSONReader.beginObject();
+			while (JSONReader.hasNext()) {
+				String key = JSONReader.nextName();
+				if (key.equals("count")){
+					count += JSONReader.nextInt();
 				}
-				JSONReader.endArray();
-			}
-			else{
-				JSONReader.skipValue();
-			}
+				else if (key.equals("author")) {
+			        author = parseAuthor(JSONReader); 
+			     }
+				else if (key.equals("posts")){
+					JSONReader.beginArray();
+					while(JSONReader.hasNext()){
+						posts.add(parsePost(JSONReader));	
+					}
+					JSONReader.endArray();
+				}
+				else {
+					JSONReader.skipValue();
+				}
 
+			}
+			JSONReader.endObject();
+			pageCounter += 1;
 		}
+		
+		System.out.println(count);
 		return author;
 		
 	}
@@ -106,7 +109,8 @@ public class DataParse {
 				
 				if (fieldTypeName.equals("String")) { // key is "title", "content", "url", "excerpt", or "date"
 					val = JSONReader.nextString();
-				} else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
+				}
+				else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
 					val = parseTagsOrCategories(JSONReader);
 				}
 				post.getClass().getDeclaredField(key).set(post, val); 
@@ -131,7 +135,7 @@ public class DataParse {
 					String title = JSONReader.nextString();
 					tagsOrCategories.add(title);
 				}
-				else{
+				else {
 					JSONReader.skipValue();
 				}
 			}
