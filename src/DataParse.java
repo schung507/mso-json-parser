@@ -5,10 +5,6 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 
@@ -83,7 +79,7 @@ public class DataParse {
 		
 		while (JSONReader.hasNext()) {
 			String key = JSONReader.nextName();
-			if (getDeclaredFieldNames(author).contains(key)) {
+			if (getDeclaredFieldNames(author).contains(key)) { // key is "name", "position", "email", or "description"
 				String val = JSONReader.nextString();
 				author.getClass().getDeclaredField(key).set(author, val);
 			} else {
@@ -91,7 +87,7 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-//		System.out.println(author);
+		System.out.println(author);
 		return author;
 		
 	}
@@ -103,17 +99,17 @@ public class DataParse {
 
 		while(JSONReader.hasNext()){
 			String key = JSONReader.nextName();
+			
 			if (getDeclaredFieldNames(post).contains(key)) {
-				String val = JSONReader.nextString();
-				post.getClass().getDeclaredField(key).set(post, val);
-			} else if (key.equals("categories")) {
-				ArrayList<String> categories = parseTagsOrCategories(JSONReader);
-//				System.out.println(categories);
-				post.getClass().getDeclaredField(key).set(post, categories);
-			} else if (key.equals("tags")) {
-				ArrayList<String> tags = parseTagsOrCategories(JSONReader);
-//				System.out.println(tags);
-				post.getClass().getDeclaredField(key).set(post, tags);
+				String fieldTypeName = post.getClass().getDeclaredField(key).getType().getSimpleName();
+				Object val = null;
+				
+				if (fieldTypeName.equals("String")) { // key is "title", "content", "url", "excerpt", or "date"
+					val = JSONReader.nextString();
+				} else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
+					val = parseTagsOrCategories(JSONReader);
+				}
+				post.getClass().getDeclaredField(key).set(post, val); 
 			} else {
 				JSONReader.skipValue();
 			}
@@ -142,7 +138,6 @@ public class DataParse {
 			JSONReader.endObject();			
 		}
 		JSONReader.endArray();
-//		System.out.println(tagsOrCategories);
 		return tagsOrCategories;
 	}
 //	*/
@@ -150,9 +145,7 @@ public class DataParse {
 	private static ArrayList<String> getDeclaredFieldNames(Object obj) {
 		ArrayList<String> names = new ArrayList<String>();
 		for (Field field : obj.getClass().getDeclaredFields()) {
-			if (field.getType().getSimpleName().equals("String")) {
-				names.add(field.getName());
-			}
+			names.add(field.getName());
 		}
 		return names;
 		
