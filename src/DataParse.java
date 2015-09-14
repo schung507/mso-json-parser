@@ -5,6 +5,9 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
@@ -43,9 +46,8 @@ public class DataParse {
 		
 		while (JSONReader.hasNext()) {
 			
-//			String key = JSONReader.nextName(); 
-			Object key = JSONReader.nextName();
-			System.out.println(key);
+			String key = JSONReader.nextName();
+//			System.out.println(key);
 			
 			if (key.equals("count")){
 				count = JSONReader.nextInt();
@@ -89,7 +91,7 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-		System.out.println(author);
+//		System.out.println(author);
 		return author;
 		
 	}
@@ -104,6 +106,14 @@ public class DataParse {
 			if (getDeclaredFieldNames(post).contains(key)) {
 				String val = JSONReader.nextString();
 				post.getClass().getDeclaredField(key).set(post, val);
+			} else if (key.equals("categories")) {
+				ArrayList<String> categories = parseTagsOrCategories(JSONReader);
+//				System.out.println(categories);
+				post.getClass().getDeclaredField(key).set(post, categories);
+			} else if (key.equals("tags")) {
+				ArrayList<String> tags = parseTagsOrCategories(JSONReader);
+//				System.out.println(tags);
+				post.getClass().getDeclaredField(key).set(post, tags);
 			} else {
 				JSONReader.skipValue();
 			}
@@ -112,11 +122,9 @@ public class DataParse {
 		System.out.println(post);
 		return post;
 	}
-	/*
-	public static String[] parseTagsOrCategories(JsonReader JSONReader) throws IOException{
+//	/*
+	public static ArrayList<String> parseTagsOrCategories(JsonReader JSONReader) throws IOException{
 		ArrayList<String> tagsOrCategories = new ArrayList<String>();
-		String[] newTagsOrCategories;
-		
 		JSONReader.beginArray();
 		
 		while(JSONReader.hasNext()){
@@ -124,24 +132,27 @@ public class DataParse {
 			while(JSONReader.hasNext()){
 				String key = JSONReader.nextName(); 
 				if(key.equals("title")){
-					System.out.println(JSONReader.nextString());
-					tagsOrCategories.add(JSONReader.nextString());
+					String title = JSONReader.nextString();
+					tagsOrCategories.add(title);
 				}
 				else{
-					System.out.println("ugh");
+					JSONReader.skipValue();
 				}
 			}
 			JSONReader.endObject();			
 		}
 		JSONReader.endArray();
-		newTagsOrCategories = tagsOrCategories.toArray(new String[tagsOrCategories.size()]);
-		return newTagsOrCategories;
-	}*/
+//		System.out.println(tagsOrCategories);
+		return tagsOrCategories;
+	}
+//	*/
 	
 	private static ArrayList<String> getDeclaredFieldNames(Object obj) {
 		ArrayList<String> names = new ArrayList<String>();
 		for (Field field : obj.getClass().getDeclaredFields()) {
-			names.add(field.getName());
+			if (field.getType().getSimpleName().equals("String")) {
+				names.add(field.getName());
+			}
 		}
 		return names;
 		
