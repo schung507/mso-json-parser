@@ -6,6 +6,7 @@ public class Post {
 		url,
 		excerpt,
 		date;
+	Author author;
 //	String[] categories;
 	ArrayList<String> categories;
 	ArrayList<String> tags;
@@ -26,9 +27,21 @@ public class Post {
 		tags = _tags;
 	}
 	
+	public Post(Post oldPost){
+		this.title = oldPost.title;
+		this.content = oldPost.content;
+		this.url = oldPost.url;
+		this.date = oldPost.date;
+		this.excerpt = oldPost.excerpt;
+		this.author = oldPost.author;
+		this.categories = new ArrayList<String>(oldPost.categories);
+		this.tags = new ArrayList<String>(oldPost.tags);
+	}
+	
+	
 	@Override
 	public String toString(){
-		String info = String.format("title: %s\nurl: %s\nexcerpt: %s\ndate: %s \ncategories: %s \ntags: %s \n\n", title, url, excerpt, date, categories, tags);
+		String info = String.format("title: %s\nurl: %s\nauthor: %s\nexcerpt: %s\ndate: %s \ncategories: %s \ntags: %s \n\n", title, url, author, excerpt, date, categories, tags);
 		return info;
 	}
 }

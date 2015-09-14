@@ -31,34 +31,27 @@ public class DataParse {
 		return rootobj;*/
 	} 
 	
-
-	public static Author getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+	//Returns Author page 
+	public static AuthorPage getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		JsonReader JSONReader = readUrl(url);
 		JSONReader.beginObject();
-		Author author = null;
-		Post[] posts = null;
-		int count;
-		int pages;
+		Author author = new Author();
+		ArrayList<Post> posts = new ArrayList<Post>();
+		
 		
 		while (JSONReader.hasNext()) {
 			
 			String key = JSONReader.nextName();
 //			System.out.println(key);
 			
-			if (key.equals("count")){
-				count = JSONReader.nextInt();
-			}
-			else if (key.equals("pages")){
-				pages = JSONReader.nextInt();
-			}
-			else if(key.equals("author")) {
+			if(key.equals("author")) {
 		        author = parseAuthor(JSONReader); 
 		     }
 			else if(key.equals("posts")){
 				
 				JSONReader.beginArray();
 				while(JSONReader.hasNext()){
-					parsePost(JSONReader);
+					posts.add(parsePost(JSONReader));
 					
 				}
 				JSONReader.endArray();
@@ -68,7 +61,9 @@ public class DataParse {
 			}
 
 		}
-		return author;
+		
+		AuthorPage authorPage = new AuthorPage(author, posts);
+		return authorPage;
 		
 	}
 
@@ -87,7 +82,7 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-		System.out.println(author);
+		//System.out.println(author);
 		return author;
 		
 	}
@@ -108,6 +103,8 @@ public class DataParse {
 					val = JSONReader.nextString();
 				} else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
 					val = parseTagsOrCategories(JSONReader);
+				} else if (fieldTypeName.equals("Author")){
+					val = parseAuthor(JSONReader);
 				}
 				post.getClass().getDeclaredField(key).set(post, val); 
 			} else {
@@ -115,7 +112,7 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-		System.out.println(post);
+		//System.out.println(post);
 		return post;
 	}
 //	/*
@@ -153,10 +150,9 @@ public class DataParse {
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		// TODO Auto-generated method stub
-		/*
-		System.out.println(readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung"));
-	    JsonObject json = readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung");
-	    System.out.println(getAuthorPosts(json));*/
-		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
+		
+		AuthorPage Willy = getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
+		System.out.println(Willy.author);
+		System.out.println(Willy.posts);
 	}
 }
