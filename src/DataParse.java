@@ -12,23 +12,12 @@ public class DataParse {
 	
 	//returns json reader with URL as input
 	public static JsonReader readUrl(String urlString) throws IOException {
-		// TODO Auto-generated method stub
+		
 	    URL url= new URL(urlString); //just a string
 	    Reader jsonReader = new InputStreamReader(url.openStream());
 	    JsonReader JSONReader = new JsonReader(jsonReader);
 	    return JSONReader;
 	    
-	    /*
-	    // Connect to the URL using java's native library
-	    URL url = new URL(sURL);
-	    HttpURLConnection request = (HttpURLConnection) url.openConnection();
-	    request.connect();
-
-	    // Convert to a JSON object to print data
-	    JsonParser jp = new JsonParser(); //from gson
-	    JsonElement root = jp.parse(new InputStreamReader((InputStream) request.getContent())); //Convert the input stream to a json element
-	    JsonObject rootobj = root.getAsJsonObject(); //May be an array, may be an object. 
-		return rootobj;*/
 	} 
 	
 	//Returns Author page 
@@ -148,11 +137,49 @@ public class DataParse {
 		
 	}
 	
+	private static SearchPage getSearchPage(String query) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		String url = URLParse.URLforSearchQuery(query);
+		JsonReader JSONReader = readUrl(url);
+		
+		JSONReader.beginObject();
+		
+		ArrayList<Post> posts = new ArrayList<Post>();
+		
+		
+		while (JSONReader.hasNext()) {
+			
+			String key = JSONReader.nextName();
+//			System.out.println(key);
+			
+			if(key.equals("posts")){
+				
+				JSONReader.beginArray();
+				while(JSONReader.hasNext()){
+					posts.add(parsePost(JSONReader));
+					
+				}
+				JSONReader.endArray();
+			}
+			else{
+				JSONReader.skipValue();
+			}
+
+		}
+		
+		SearchPage searchPage = new SearchPage(query, posts);
+		return searchPage;
+		
+		
+		
+		
+	}
+	
+	
+	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		// TODO Auto-generated method stub
 		
-		AuthorPage Willy = getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
-		System.out.println(Willy.author);
-		System.out.println(Willy.posts);
+		SearchPage health = getSearchPage("health");
+		System.out.println(health);
 	}
 }
