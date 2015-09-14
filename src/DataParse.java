@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
+
 import org.jsoup.Jsoup;
 
 import com.google.gson.JsonElement;
@@ -34,6 +35,7 @@ public class DataParse {
 		int pages = parser.parse(JSONReader).getAsJsonObject().get("pages").getAsInt();
 		int count = 0;
 		Author author = new Author();
+
 		ArrayList<Post> posts = new ArrayList<Post>();
 		
 		int pageCounter = 1;
@@ -68,6 +70,7 @@ public class DataParse {
 		author.setNumposts(count);
 //		return author;
 		return new AuthorPage(author, posts);
+
 	}
 
 	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
@@ -104,6 +107,7 @@ public class DataParse {
 				
 				if (fieldTypeName.equals("String")) { // key is "title", "content", "url", "excerpt", or "date"
 					val = Jsoup.parse(JSONReader.nextString()).text();
+
 				}
 				else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
 					val = parseTagsOrCategories(JSONReader);
