@@ -20,7 +20,7 @@ public class Author {
 	}
 	
 	public void setNumposts(int _numposts) {
-//		numposts = _numposts;
+		numposts = _numposts;
 	}
 	
 	@Override

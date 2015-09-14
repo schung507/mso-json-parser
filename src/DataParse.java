@@ -69,8 +69,10 @@ public class DataParse {
 			JSONReader.endObject();
 			pageCounter += 1;
 		}
+//		System.out.println(count);
 		
-		System.out.println(count);
+		author.setNumposts(count);
+		System.out.println(author);
 		return author;
 		
 	}
@@ -90,7 +92,6 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-		System.out.println(author);
 		return author;
 		
 	}
