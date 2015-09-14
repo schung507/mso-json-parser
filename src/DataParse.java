@@ -43,7 +43,9 @@ public class DataParse {
 		
 		while (JSONReader.hasNext()) {
 			
-			String key = JSONReader.nextName(); 
+//			String key = JSONReader.nextName(); 
+			Object key = JSONReader.nextName();
+			System.out.println(key);
 			
 			if (key.equals("count")){
 				count = JSONReader.nextInt();
@@ -92,41 +94,22 @@ public class DataParse {
 		
 	}
 	
-	public static Post parsePost(JsonReader JSONReader) throws IOException{
-		String title= null,
-			content = null,
-			URL = null,
-			excerpt = null,
-			date = null;
-		String[] categories = null;
+	public static Post parsePost(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		
-			JSONReader.beginObject();
+		Post post = new Post();
+		JSONReader.beginObject();
 
-			while(JSONReader.hasNext()){
-				
-				String key = JSONReader.nextName(); 
-				if (key.equals("title")){
-					title = JSONReader.nextString();
-				}
-				else if (key.equals("content")){
-					content = JSONReader.nextString();
-				}
-				else if(key.equals("url")) {
-			        URL = JSONReader.nextString(); 
-			     }
-				else if(key.equals("excerpt")){
-					excerpt = JSONReader.nextString();
-				}
-				else if(key.equals("date")){
-					date = JSONReader.nextString();
-				}
-				else{
-					JSONReader.skipValue();
-				}
+		while(JSONReader.hasNext()){
+			String key = JSONReader.nextName();
+			if (getDeclaredFieldNames(post).contains(key)) {
+				String val = JSONReader.nextString();
+				post.getClass().getDeclaredField(key).set(post, val);
+			} else {
+				JSONReader.skipValue();
 			}
-		JSONReader.endObject();	
-		Post post = new Post(title, content, URL, excerpt, date);
-//		System.out.println(post);
+		}
+		JSONReader.endObject();
+		System.out.println(post);
 		return post;
 	}
 	/*

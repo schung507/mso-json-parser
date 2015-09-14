@@ -3,22 +3,26 @@
 public class Post {
 	String title,
 		content,
-		URL,
+		url,
 		excerpt,
 		date;
-	String[] categories;
+//	String[] categories;
 	
-	public Post(String _title, String _content, String _URL, String _excerpt, String _date){
+	public Post() {
+		
+	}
+	
+	public Post(String _title, String _content, String _url, String _excerpt, String _date){
 		title = _title;
 		content = _content;
-		URL = _URL;
+		url = _url;
 		date = _date;
 		excerpt = _excerpt;
 	}
 	
 	@Override
 	public String toString(){
-		String info = String.format("title: %s\nURL: %s\nexcerpt: %s\ndate: %s\n\n", title, URL, excerpt, date);
+		String info = String.format("title: %s\nurl: %s\nexcerpt: %s\ndate: %s\n\n", title, url, excerpt, date);
 		return info;
 	}
 }
