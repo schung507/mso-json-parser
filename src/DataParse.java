@@ -65,12 +65,10 @@ public class DataParse {
 			JSONReader.endObject();
 			pageCounter += 1;
 		}
-
-
+		
 		author.setNumposts(count);
 //		return author;
 		return new AuthorPage(author, posts);
-
 	}
 
 	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
@@ -88,7 +86,6 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-
 		return author;
 		
 	}
