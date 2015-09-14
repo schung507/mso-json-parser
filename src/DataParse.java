@@ -5,9 +5,13 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
+import org.jsoup.Jsoup;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
+
+import java.net.URLDecoder;
 
 
 public class DataParse {
@@ -59,13 +63,10 @@ public class DataParse {
 			JSONReader.endObject();
 			pageCounter += 1;
 		}
-//		System.out.println(count);
-		
+
 
 		author.setNumposts(count);
-		System.out.println(author);
 		return author;
-		
 	}
 
 	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
@@ -89,7 +90,7 @@ public class DataParse {
 	}
 	
 	public static Post parsePost(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
-		
+		JsonParser parser = new JsonParser();
 		Post post = new Post();
 		JSONReader.beginObject();
 
@@ -101,7 +102,7 @@ public class DataParse {
 				Object val = null;
 				
 				if (fieldTypeName.equals("String")) { // key is "title", "content", "url", "excerpt", or "date"
-					val = JSONReader.nextString();
+					val = Jsoup.parse(JSONReader.nextString()).text();
 				}
 				else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
 					val = parseTagsOrCategories(JSONReader);
@@ -127,7 +128,7 @@ public class DataParse {
 			while(JSONReader.hasNext()){
 				String key = JSONReader.nextName(); 
 				if(key.equals("title")){
-					String title = JSONReader.nextString();
+					String title = Jsoup.parse(JSONReader.nextString()).text();
 					tagsOrCategories.add(title);
 				}
 				else {
@@ -191,8 +192,12 @@ public class DataParse {
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
 		// TODO Auto-generated method stub
-		
-		SearchPage health = getSearchPage("health");
-		System.out.println(health);
+		/*
+		System.out.println(readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung"));
+	    JsonObject json = readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung");
+//	    System.out.println(getAuthorPosts(json));*/
+//		String s = "Goose Bumps &#8211; My Hair&#8217;s Doing What?";
+//		System.out.println(Jsoup.parse(s).text());
+		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
 	}
 }
