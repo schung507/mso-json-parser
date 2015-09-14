@@ -3,6 +3,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 
+import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
 
@@ -97,7 +98,6 @@ public class DataParse {
 			else if(key.equals("email")){
 				email = JSONReader.nextString();
 			}
-			
 			else{
 				JSONReader.skipValue();
 			}
@@ -105,7 +105,7 @@ public class DataParse {
 		}
 		JSONReader.endObject();
 		Author author = new Author(name, position, email,description);
-		author.printAuthor();
+		System.out.println(author);
 		return author;
 		
 	}
@@ -117,7 +117,6 @@ public class DataParse {
 			excerpt = null,
 			date = null;
 		String[] categories = null;
-		
 		
 			JSONReader.beginObject();
 
@@ -145,7 +144,7 @@ public class DataParse {
 			}
 		JSONReader.endObject();	
 		Post post = new Post(title, content, URL, excerpt, date);
-		post.printPost();
+		System.out.println(post);
 		return post;
 	}
 	/*

@@ -12,9 +12,11 @@ public class Author {
 		email = _email;
 		description = _description;
 	}
-
-	public void printAuthor(){
-		System.out.println("name: " + name + "\nposition: " + position + "\nemail: " + email + "\ndescription: " + description + "\n\n");
+	
+	@Override
+	public String toString() {
+		String info = String.format("name: %s\nposition: %s\nemail: %s\ndescription: %s\n\n", name, position, email, description);
+		return info;
 	}
 
 }

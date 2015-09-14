@@ -16,7 +16,9 @@ public class Post {
 		excerpt = _excerpt;
 	}
 	
-	public void printPost(){
-		System.out.println("title: " + title + "\nURL: " + URL + "\nexcerpt: " + excerpt + "\ndate: " + date + "\n\n");
+	@Override
+	public String toString(){
+		String info = String.format("title: %s\nURL: %s\nexcerpt: %s\ndate: %s\n\n", title, URL, excerpt, date);
+		return info;
 	}
 }
