@@ -6,6 +6,8 @@ public class Author {
 		email, 
 		description;
 	
+	int numposts;
+	
 	public Author() {
 		
 	}
