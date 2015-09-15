@@ -27,13 +27,13 @@ public class DataParse {
 	} 
 	
 	//Returns Author page 
-	public static Author getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+	public static AuthorPage getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		JsonReader JSONReader = readUrl(url);
 
 		JsonParser parser = new JsonParser();
 		int pages = parser.parse(JSONReader).getAsJsonObject().get("pages").getAsInt();
 		int count = 0;
-		Author author = null;
+		Author author = new Author();
 		ArrayList<Post> posts = new ArrayList<Post>();
 		
 		int pageCounter = 1;
@@ -66,7 +66,8 @@ public class DataParse {
 
 
 		author.setNumposts(count);
-		return author;
+//		return author;
+		return new AuthorPage(author, posts);
 	}
 
 	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
