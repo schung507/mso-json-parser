@@ -63,8 +63,9 @@ public class DataParse {
 		}
 
 		author.setNumposts(count);
-//		return author;
-		return new AuthorPage(author, posts);
+		AuthorPage authorPage = new AuthorPage(author, posts);
+		System.out.println(authorPage);
+		return authorPage;
 	}
 
 	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
@@ -87,7 +88,6 @@ public class DataParse {
 	}
 	
 	public static Post parsePost(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
-		JsonParser parser = new JsonParser();
 		Post post = new Post();
 		JSONReader.beginObject();
 
@@ -112,7 +112,6 @@ public class DataParse {
 			}
 		}
 		JSONReader.endObject();
-		//System.out.println(post);
 		return post;
 	}
 //	/*

@@ -15,4 +15,13 @@ public class AuthorPage {
 		this.author = oldAuthorPage.author;
 		this.posts = oldAuthorPage.posts;
 	}
+	
+	@Override
+	public String toString() {
+		String info = String.format("%s\n", author);
+		for (Post post : this.posts) {
+			info += String.format("%s\n", post);
+		}
+		return info;
+	}
 }
