@@ -27,7 +27,7 @@ public class Author {
 	
 	@Override
 	public String toString() {
-		String info = String.format("name: %s\nposition: %s\nemail: %s\ndescription: %s\n\n", name, nickname, email, description);
+		String info = String.format("name: %s\nnickname: %s\nemail: %s\ndescription: %s\nnumposts: %d\n", name, nickname, email, description, numposts);
 		return info;
 	}
 
