@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 import org.jsoup.Jsoup;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 
@@ -31,7 +34,6 @@ public class DataParse {
 		int pages = parser.parse(JSONReader).getAsJsonObject().get("pages").getAsInt();
 		int count = 0;
 		Author author = new Author();
-
 		ArrayList<Post> posts = new ArrayList<Post>();
 		
 		int pageCounter = 1;
@@ -56,7 +58,6 @@ public class DataParse {
 				else {
 					JSONReader.skipValue();
 				}
-
 			}
 			JSONReader.endObject();
 			pageCounter += 1;
@@ -64,7 +65,7 @@ public class DataParse {
 
 		author.setNumposts(count);
 		AuthorPage authorPage = new AuthorPage(author, posts);
-		System.out.println(authorPage);
+//		System.out.println(authorPage);
 		return authorPage;
 	}
 
@@ -148,42 +149,62 @@ public class DataParse {
 	}
 	
 	private static SearchPage getSearchPage(String query) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		
 		String url = URLParse.URLforSearchQuery(query);
 		JsonReader JSONReader = readUrl(url);
 		
-		JSONReader.beginObject();
+		JsonParser parser = new JsonParser();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+		int total = parsed.get("count_total").getAsInt();
+		int pages = parsed.get("pages").getAsInt();
+		System.out.println(total);
+		System.out.println(pages);
 		
 		ArrayList<Post> posts = new ArrayList<Post>();
-		
-		
-		while (JSONReader.hasNext()) {
-			
-			String key = JSONReader.nextName();
-//			System.out.println(key);
-			
-			if(key.equals("posts")){
-				
-				JSONReader.beginArray();
-				while(JSONReader.hasNext()){
-					posts.add(parsePost(JSONReader));
-					
-				}
-				JSONReader.endArray();
-			}
-			else{
-				JSONReader.skipValue();
-			}
-
+		JsonArray postArray = parsed.get("posts").getAsJsonArray();
+		for (JsonElement post : postArray) {
+			JsonObject obj = post.getAsJsonObject();
+			Post newpost = parsePostJsonObject(obj);
+			System.out.println(newpost);
+			posts.add(newpost);
 		}
 		
-		SearchPage searchPage = new SearchPage(query, posts);
+		SearchPage searchPage = new SearchPage(query, total, posts);
+		System.out.println(searchPage);
 		return searchPage;
-		
-		
-		
-		
 	}
 	
+	static Post parsePostJsonObject(JsonObject obj) {
+		String url = obj.get("url").getAsString();
+		String title = Jsoup.parse(obj.get("title").getAsString()).text();
+		String content = obj.get("content").getAsString();
+		String excerpt = obj.get("excerpt").getAsString();
+		String date = obj.get("date").getAsString();
+		ArrayList<String> categories = new ArrayList<String>();
+		ArrayList<String> tags = new ArrayList<String>();
+		JsonArray categoryArray = obj.get("categories").getAsJsonArray();
+		JsonArray tagArray = obj.get("tags").getAsJsonArray();
+		for (JsonElement category : categoryArray) {
+			categories.add(category.getAsJsonObject().get("title").getAsString());
+		}
+		for (JsonElement tag : tagArray) {
+			tags.add(tag.getAsJsonObject().get("title").getAsString());
+		}
+		JsonObject authorObject = obj.get("author").getAsJsonObject();
+		Author author = parseAuthorJsonObject(authorObject);
+		Post post = new Post(title, content, url, excerpt, date, categories, tags, author);
+		return post;
+	}
+	
+	static Author parseAuthorJsonObject(JsonObject obj) {
+		String name = obj.get("name").getAsString();
+		String position = obj.get("nickname").getAsString();
+		String email = "";
+		String description = obj.get("description").getAsString();
+		int numposts = 0;
+		Author author = new Author(name, position, email, description, numposts);
+		return author;
+	}
 	
 	
 	public static void main(String[] args) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException {
@@ -194,6 +215,7 @@ public class DataParse {
 //	    System.out.println(getAuthorPosts(json));*/
 //		String s = "Goose Bumps &#8211; My Hair&#8217;s Doing What?";
 //		System.out.println(Jsoup.parse(s).text());
-		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
+//		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
+		getSearchPage("DNA");
 	}
 }

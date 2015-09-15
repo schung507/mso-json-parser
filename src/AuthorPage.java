@@ -12,14 +12,14 @@ public class AuthorPage {
 	}
 	
 	public AuthorPage(AuthorPage oldAuthorPage){
-		this.author = oldAuthorPage.author;
-		this.posts = oldAuthorPage.posts;
+		author = oldAuthorPage.author;
+		posts = oldAuthorPage.posts;
 	}
 	
 	@Override
 	public String toString() {
 		String info = String.format("%s\n", author);
-		for (Post post : this.posts) {
+		for (Post post : posts) {
 			info += String.format("%s\n", post);
 		}
 		return info;
