@@ -26,39 +26,7 @@ public class DataParse {
 	    
 	} 
 	
-	//Returns Author page 
-	static AuthorPage getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
-		JsonReader JSONReader = readUrl(url);
-		JsonParser parser = new JsonParser();
-		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
-//		for (Entry<String, JsonElement> key : parsed.entrySet()) {
-//			System.out.println(key.getKey());
-//		}
-		
-		int pages = parsed.get("pages").getAsInt();
 
-		JsonObject authorObject = parsed.get("author").getAsJsonObject();
-		Author author = parseAuthorJsonObject(authorObject);
-		ArrayList<Post> posts = new ArrayList<Post>();
-		
-		int pageCounter = 1;
-		while (pageCounter <= pages) {
-			JSONReader = readUrl(String.format("%s&page=%d", url, pageCounter));
-			JsonObject parsedPage = parser.parse(JSONReader).getAsJsonObject();
-			JsonArray postArray = parsedPage.get("posts").getAsJsonArray();
-
-			ArrayList<Post> pagePosts = parsePostJsonArray(postArray);
-			posts.addAll(pagePosts);
-			pageCounter += 1;
-		}
-		
-		int count = posts.size();
-		author.setNumposts(count);
-		AuthorPage authorPage = new AuthorPage(author, posts);
-		System.out.println(authorPage);
-		return authorPage;
-	}
-	
 	// Get list of tag names / category names
 	static ArrayList<String> parseTagOrCategoryJsonArray(JsonArray jsonArray) {
 		ArrayList<String> tagsOrCategories = new ArrayList<String>();
@@ -87,24 +55,22 @@ public class DataParse {
 		return posts;
 	}
 	
-	static SearchPage getSearchPage(String query) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+
+	static ArrayList<Post> parsePages(int pages, String url, ArrayList<Post> posts, JsonReader JSONReader, JsonParser parser) throws IOException{
 		
-		String url = URLParse.URLforSearchQuery(query);
-		JsonReader JSONReader = readUrl(url);
+		int pageCounter = 1;
 		
-		JsonParser parser = new JsonParser();
-		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
-		int total = parsed.get("count_total").getAsInt();
-		int pages = parsed.get("pages").getAsInt();
-		System.out.println(total);
-		System.out.println(pages);
-		
-		ArrayList<Post> posts = new ArrayList<Post>();
-		JsonArray postArray = parsed.get("posts").getAsJsonArray();
-		posts = parsePostJsonArray(postArray);
-		SearchPage searchPage = new SearchPage(query, total, posts);
-		System.out.println(searchPage);
-		return searchPage;
+		while (pageCounter <= pages) {
+			System.out.println(pageCounter);
+			JSONReader = readUrl(String.format("%s&page=%d", url, pageCounter));
+			JsonObject parsedPage = parser.parse(JSONReader).getAsJsonObject();
+			JsonArray postArray = parsedPage.get("posts").getAsJsonArray();
+			
+			ArrayList<Post> pagePosts = parsePostJsonArray(postArray);
+			posts.addAll(pagePosts);
+			pageCounter += 1;
+		}
+		return posts;
 	}
 	
 	static Post parsePostJsonObject(JsonObject obj) {
@@ -142,11 +108,121 @@ public class DataParse {
 	private static String parseJsonObject(JsonObject obj, String field) {
 		JsonElement elem = obj.get(field);
 		try {
-			String str = elem.getAsString();
+			String str = "";
+			if(!elem.isJsonNull()){
+				str = elem.getAsString();
+			}
 			return Jsoup.parse(str).text();
 		} catch (NullPointerException e) {
 			return null;
 		}
+	}
+
+	//Returns Author page 
+	static AuthorPage getAuthorPosts(String author_slug) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		String url = URLParse.URLforAuthorPost(author_slug);
+		JsonReader JSONReader = readUrl(url);
+		JsonParser parser = new JsonParser();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+//		for (Entry<String, JsonElement> key : parsed.entrySet()) {
+//			System.out.println(key.getKey());
+//		}
+		
+		int pages = parsed.get("pages").getAsInt();
+
+		JsonObject authorObject = parsed.get("author").getAsJsonObject();
+		Author author = parseAuthorJsonObject(authorObject);
+		ArrayList<Post> posts = new ArrayList<Post>();
+		
+		int pageCounter = 1;
+		while (pageCounter <= pages) {
+			JSONReader = readUrl(String.format("%s&page=%d", url, pageCounter));
+			JsonObject parsedPage = parser.parse(JSONReader).getAsJsonObject();
+			JsonArray postArray = parsedPage.get("posts").getAsJsonArray();
+
+			ArrayList<Post> pagePosts = parsePostJsonArray(postArray);
+			posts.addAll(pagePosts);
+			pageCounter += 1;
+		}
+		
+		int count = posts.size();
+		author.setNumposts(count);
+		AuthorPage authorPage = new AuthorPage(author, posts);
+		System.out.println(authorPage);
+		return authorPage;
+	}
+	
+	static SearchPage getSearchPage(String query) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		
+		String url = URLParse.URLforSearchQuery(query);
+		JsonReader JSONReader = readUrl(url);
+		
+		JsonParser parser = new JsonParser();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+		int total = parsed.get("count_total").getAsInt();
+		int pages = parsed.get("pages").getAsInt();
+		System.out.println(total);
+		System.out.println(pages);
+		
+		ArrayList<Post> posts = new ArrayList<Post>();
+		
+		posts = parsePages(pages, url, posts, JSONReader, parser);
+		
+		SearchPage searchPage = new SearchPage(query, total, posts);
+		System.out.println(searchPage);
+		return searchPage;
+	}
+	
+	static TagPage getTagPage(String tag) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		
+		String url = URLParse.URLforTagPost(tag);
+		JsonReader JSONReader = readUrl(url);
+		
+		JsonParser parser = new JsonParser();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+		int pages = parsed.get("pages").getAsInt();
+		System.out.println(pages);
+		
+		ArrayList<Post> posts = new ArrayList<Post>();
+		
+		posts = parsePages(pages, url, posts, JSONReader, parser);
+		
+		TagPage TagPage = new TagPage(tag, posts);
+		System.out.println(TagPage);
+		return TagPage;
+	}
+	
+	static DatePage getDatePage(String date)throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		
+		String url = URLParse.URLforDatePosts(date);
+		JsonReader JSONReader = readUrl(url);
+		
+		JsonParser parser = new JsonParser();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+		int pages = parsed.get("pages").getAsInt();
+		System.out.println(pages);
+		
+		ArrayList<Post> posts = new ArrayList<Post>();
+		
+		posts = parsePages(pages, url, posts, JSONReader, parser);
+		
+		DatePage datePage = new DatePage(date, posts);
+		System.out.println(datePage);
+		return datePage;
+	}
+
+	static ArticlePage getArticlePage(String post_slug)throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+		String url = URLParse.URLforSinglePage(post_slug);
+		JsonReader JSONReader = readUrl(url);
+		JsonParser parser = new JsonParser();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+		Post post = parsePostJsonObject(parsed.get("post").getAsJsonObject());
+		String older = parseJsonObject(parsed, "previous_url");
+		String newer = parseJsonObject(parsed, "next_url");
+		
+		ArticlePage articlePage = new ArticlePage(post, older, newer);
+		System.out.println(articlePage);
+		return articlePage;
 	}
 	
 	
@@ -157,7 +233,10 @@ public class DataParse {
 	    JsonObject json = readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung");
 //	    System.out.println(getAuthorPosts(json));*/
 
-//		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
-		getSearchPage("DNA");
+		getAuthorPosts("willycheung");
+//		getSearchPage("DNA");
+//		getTagPage("drug-resistant");
+//		getArticlePage("the-devastating-effect-of-all-nighters-how-one-night-alters-your-genes");
+//		getDatePage("2015/08");
 	}
 }

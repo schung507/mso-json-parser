@@ -1,21 +1,22 @@
 import java.util.ArrayList;
 
 
-public class TagPage {
-	String tag;
+public class DatePage {
+	String date;
 	ArrayList<Post> posts;
-
-	public TagPage( String _tag, ArrayList<Post> _posts){
-		tag = _tag;
+	
+	public DatePage( String _date, ArrayList<Post> _posts){
+		date = _date;
 		posts = _posts;
 	}
 	
 	@Override
 	public String toString(){
-		String info = String.format("Search tag: %s\n\n", tag);
+		String info = String.format("Search date: %s\n\n", date);
 		for (Post post : posts) {
 			info += String.format("%s\n", post);
 		}
 		return info;
 	}
+	
 }
