@@ -29,43 +29,32 @@ public class DataParse {
 	//Returns Author page 
 	public static AuthorPage getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		JsonReader JSONReader = readUrl(url);
-
 		JsonParser parser = new JsonParser();
-		int pages = parser.parse(JSONReader).getAsJsonObject().get("pages").getAsInt();
+		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+		int pages = parsed.get("pages").getAsInt();
 		int count = 0;
-		Author author = new Author();
+
+		JsonObject authorObject = parsed.get("author").getAsJsonObject();
+		Author author = parseAuthorJsonObject(authorObject);
 		ArrayList<Post> posts = new ArrayList<Post>();
 		
 		int pageCounter = 1;
 		while (pageCounter <= pages) {
 			JSONReader = readUrl(String.format("%s&page=%d", url, pageCounter));
-			JSONReader.beginObject();
-			while (JSONReader.hasNext()) {
-				String key = JSONReader.nextName();
-				if (key.equals("count")){
-					count += JSONReader.nextInt();
-				}
-				else if (key.equals("author")) {
-			        author = parseAuthor(JSONReader); 
-			     }
-				else if (key.equals("posts")){
-					JSONReader.beginArray();
-					while(JSONReader.hasNext()){
-						posts.add(parsePost(JSONReader));	
-					}
-					JSONReader.endArray();
-				}
-				else {
-					JSONReader.skipValue();
-				}
+			JsonObject parsedPage = parser.parse(JSONReader).getAsJsonObject();
+			JsonArray postArray = parsedPage.get("posts").getAsJsonArray();
+			for (JsonElement post : postArray) {
+				JsonObject obj = post.getAsJsonObject();
+				Post newpost = parsePostJsonObject(obj);
+				posts.add(newpost);
+				count += 1;
 			}
-			JSONReader.endObject();
 			pageCounter += 1;
 		}
 
 		author.setNumposts(count);
 		AuthorPage authorPage = new AuthorPage(author, posts);
-//		System.out.println(authorPage);
+		System.out.println(authorPage);
 		return authorPage;
 	}
 
@@ -215,7 +204,7 @@ public class DataParse {
 //	    System.out.println(getAuthorPosts(json));*/
 //		String s = "Goose Bumps &#8211; My Hair&#8217;s Doing What?";
 //		System.out.println(Jsoup.parse(s).text());
-//		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
-		getSearchPage("DNA");
+		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
+//		getSearchPage("DNA");
 	}
 }
