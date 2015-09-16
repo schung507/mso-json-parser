@@ -1,7 +1,6 @@
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -17,7 +16,7 @@ import com.google.gson.stream.JsonReader;
 public class DataParse {
 	
 	//returns json reader with URL as input
-	public static JsonReader readUrl(String urlString) throws IOException {
+	static JsonReader readUrl(String urlString) throws IOException {
 		
 	    URL url= new URL(urlString); //just a string
 	    Reader jsonReader = new InputStreamReader(url.openStream());
@@ -27,12 +26,11 @@ public class DataParse {
 	} 
 	
 	//Returns Author page 
-	public static AuthorPage getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+	static AuthorPage getAuthorPosts(String url) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		JsonReader JSONReader = readUrl(url);
 		JsonParser parser = new JsonParser();
 		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
 		int pages = parsed.get("pages").getAsInt();
-		int count = 0;
 
 		JsonObject authorObject = parsed.get("author").getAsJsonObject();
 		Author author = parseAuthorJsonObject(authorObject);
@@ -43,55 +41,42 @@ public class DataParse {
 			JSONReader = readUrl(String.format("%s&page=%d", url, pageCounter));
 			JsonObject parsedPage = parser.parse(JSONReader).getAsJsonObject();
 			JsonArray postArray = parsedPage.get("posts").getAsJsonArray();
-			for (JsonElement post : postArray) {
-				JsonObject obj = post.getAsJsonObject();
-				Post newpost = parsePostJsonObject(obj);
-				posts.add(newpost);
-				count += 1;
-			}
+
+			ArrayList<Post> pagePosts = parsePostJsonArray(postArray);
+			posts.addAll(pagePosts);
 			pageCounter += 1;
 		}
-
+		
+		int count = posts.size();
 		author.setNumposts(count);
 		AuthorPage authorPage = new AuthorPage(author, posts);
 		System.out.println(authorPage);
 		return authorPage;
 	}
-
-//	/*
-	public static ArrayList<String> parseTagsOrCategories(JsonReader JSONReader) throws IOException{
+	
+	// Get list of tag names / category names
+	static ArrayList<String> parseTagOrCategoryJsonArray(JsonArray jsonArray) {
 		ArrayList<String> tagsOrCategories = new ArrayList<String>();
-		JSONReader.beginArray();
-		
-		while(JSONReader.hasNext()){
-			JSONReader.beginObject();
-			while(JSONReader.hasNext()){
-				String key = JSONReader.nextName(); 
-				if(key.equals("title")){
-					String title = Jsoup.parse(JSONReader.nextString()).text();
-					tagsOrCategories.add(title);
-				}
-				else {
-					JSONReader.skipValue();
-				}
-			}
-			JSONReader.endObject();			
+		for (JsonElement item : jsonArray) {
+			JsonObject obj = item.getAsJsonObject();
+			String title = parseJsonObject(obj, "title");
+			tagsOrCategories.add(title);
 		}
-		JSONReader.endArray();
 		return tagsOrCategories;
 	}
-//	*/
 	
-	private static ArrayList<String> getDeclaredFieldNames(Object obj) {
-		ArrayList<String> names = new ArrayList<String>();
-		for (Field field : obj.getClass().getDeclaredFields()) {
-			names.add(field.getName());
+	// Get list of posts
+	static ArrayList<Post> parsePostJsonArray(JsonArray postArray) {
+		ArrayList<Post> posts = new ArrayList<Post>();
+		for (JsonElement postElem : postArray) {
+			JsonObject obj = postElem.getAsJsonObject();
+			Post post = parsePostJsonObject(obj);
+			posts.add(post);
 		}
-		return names;
-		
+		return posts;
 	}
 	
-	private static SearchPage getSearchPage(String query) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
+	static SearchPage getSearchPage(String query) throws IOException, IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
 		
 		String url = URLParse.URLforSearchQuery(query);
 		JsonReader JSONReader = readUrl(url);
@@ -105,48 +90,50 @@ public class DataParse {
 		
 		ArrayList<Post> posts = new ArrayList<Post>();
 		JsonArray postArray = parsed.get("posts").getAsJsonArray();
-		for (JsonElement post : postArray) {
-			JsonObject obj = post.getAsJsonObject();
-			Post newpost = parsePostJsonObject(obj);
-			System.out.println(newpost);
-			posts.add(newpost);
-		}
-		
+		posts = parsePostJsonArray(postArray);
 		SearchPage searchPage = new SearchPage(query, total, posts);
 		System.out.println(searchPage);
 		return searchPage;
 	}
 	
 	static Post parsePostJsonObject(JsonObject obj) {
-		String url = obj.get("url").getAsString();
-		String title = Jsoup.parse(obj.get("title").getAsString()).text();
-		String content = obj.get("content").getAsString();
-		String excerpt = obj.get("excerpt").getAsString();
-		String date = obj.get("date").getAsString();
-		ArrayList<String> categories = new ArrayList<String>();
-		ArrayList<String> tags = new ArrayList<String>();
-		JsonArray categoryArray = obj.get("categories").getAsJsonArray();
-		JsonArray tagArray = obj.get("tags").getAsJsonArray();
-		for (JsonElement category : categoryArray) {
-			categories.add(category.getAsJsonObject().get("title").getAsString());
-		}
-		for (JsonElement tag : tagArray) {
-			tags.add(tag.getAsJsonObject().get("title").getAsString());
-		}
+		String url = parseJsonObject(obj, "url");
+		String title = parseJsonObject(obj, "title");
+		String content = parseJsonObject(obj, "content");
+		String excerpt = parseJsonObject(obj, "excerpt");
+		String date = parseJsonObject(obj, "date");
+
 		JsonObject authorObject = obj.get("author").getAsJsonObject();
 		Author author = parseAuthorJsonObject(authorObject);
+		
+		JsonArray categoryArray = obj.get("categories").getAsJsonArray();
+		JsonArray tagArray = obj.get("tags").getAsJsonArray();
+
+		ArrayList<String> categories = parseTagOrCategoryJsonArray(categoryArray);
+		ArrayList<String> tags = parseTagOrCategoryJsonArray(tagArray);
+		
 		Post post = new Post(title, content, url, excerpt, date, categories, tags, author);
 		return post;
 	}
 	
 	static Author parseAuthorJsonObject(JsonObject obj) {
-		String name = obj.get("name").getAsString();
-		String position = obj.get("nickname").getAsString();
-		String email = "";
-		String description = obj.get("description").getAsString();
+		String name = parseJsonObject(obj, "name");
+		String position = parseJsonObject(obj, "nickname");
+		String email = parseJsonObject(obj, "email");
+		String description = parseJsonObject(obj, "description");
 		int numposts = 0;
 		Author author = new Author(name, position, email, description, numposts);
 		return author;
+	}
+	
+	private static String parseJsonObject(JsonObject obj, String field) {
+		JsonElement elem = obj.get(field);
+		try {
+			String str = elem.getAsString();
+			return Jsoup.parse(str).text();
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 	
 	
@@ -156,9 +143,8 @@ public class DataParse {
 		System.out.println(readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung"));
 	    JsonObject json = readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung");
 //	    System.out.println(getAuthorPosts(json));*/
-//		String s = "Goose Bumps &#8211; My Hair&#8217;s Doing What?";
-//		System.out.println(Jsoup.parse(s).text());
+
 		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
-//		getSearchPage("DNA");
+		getSearchPage("DNA");
 	}
 }
