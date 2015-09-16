@@ -5,7 +5,8 @@ public class Post {
 		content,
 		url,
 		excerpt,
-		date;
+		date,
+		thumbnailUrl;
 	Author author;
 
 	ArrayList<String> categories;
@@ -17,7 +18,8 @@ public class Post {
 	
 	// add author param
 	public Post(
-			String _title, String _content, String _url, String _excerpt, String _date,
+			String _title, String _content, String _url,
+			String _excerpt, String _date, String _thumbnailUrl,
 			ArrayList<String> _categories, ArrayList<String> _tags, Author _author){
 		title = _title;
 		content = _content;
@@ -27,11 +29,14 @@ public class Post {
 		categories = _categories;
 		tags = _tags;
 		author = _author;
+		thumbnailUrl = _thumbnailUrl;
 	}
 	
 	@Override
 	public String toString(){
-		String info = String.format("title: %s\nurl: %s\nauthor: %s\nexcerpt: %s\ndate: %s \ncategories: %s \ntags: %s \n", title, url, author.name, excerpt, date, categories, tags);
+		String info = String.format(
+				"title: %s\nurl: %s\nauthor: %s\nexcerpt: %s\ndate: %s\ncategories: %s\ntags: %s\nthumbnail: %s\n",
+				title, url, author.name, excerpt, date, categories, tags, thumbnailUrl);
 		return info;
 	}
 }

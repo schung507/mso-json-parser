@@ -3,6 +3,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Map.Entry;
 
 import org.jsoup.Jsoup;
 
@@ -30,6 +31,10 @@ public class DataParse {
 		JsonReader JSONReader = readUrl(url);
 		JsonParser parser = new JsonParser();
 		JsonObject parsed = parser.parse(JSONReader).getAsJsonObject();
+//		for (Entry<String, JsonElement> key : parsed.entrySet()) {
+//			System.out.println(key.getKey());
+//		}
+		
 		int pages = parsed.get("pages").getAsInt();
 
 		JsonObject authorObject = parsed.get("author").getAsJsonObject();
@@ -70,6 +75,12 @@ public class DataParse {
 		ArrayList<Post> posts = new ArrayList<Post>();
 		for (JsonElement postElem : postArray) {
 			JsonObject obj = postElem.getAsJsonObject();
+//			for (Entry<String, JsonElement> key : obj.entrySet()) {
+//				System.out.println(key.getKey());
+//			}
+//			System.out.println();
+//			System.out.println(obj.get("thumbnail"));
+//			System.out.println()
 			Post post = parsePostJsonObject(obj);
 			posts.add(post);
 		}
@@ -97,11 +108,13 @@ public class DataParse {
 	}
 	
 	static Post parsePostJsonObject(JsonObject obj) {
+		
 		String url = parseJsonObject(obj, "url");
 		String title = parseJsonObject(obj, "title");
 		String content = parseJsonObject(obj, "content");
 		String excerpt = parseJsonObject(obj, "excerpt");
 		String date = parseJsonObject(obj, "date");
+		String thumbnailUrl = parseJsonObject(obj, "thumbnail");
 
 		JsonObject authorObject = obj.get("author").getAsJsonObject();
 		Author author = parseAuthorJsonObject(authorObject);
@@ -112,7 +125,7 @@ public class DataParse {
 		ArrayList<String> categories = parseTagOrCategoryJsonArray(categoryArray);
 		ArrayList<String> tags = parseTagOrCategoryJsonArray(tagArray);
 		
-		Post post = new Post(title, content, url, excerpt, date, categories, tags, author);
+		Post post = new Post(title, content, url, excerpt, date, thumbnailUrl, categories, tags, author);
 		return post;
 	}
 	
@@ -144,7 +157,7 @@ public class DataParse {
 	    JsonObject json = readUrl("http://morningsignout.com/?json=get_author_posts&author_slug=willycheung");
 //	    System.out.println(getAuthorPosts(json));*/
 
-		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
+//		getAuthorPosts("http://morningsignout.com/?json=get_author_posts&author_meta=email&author_slug=willycheung");
 		getSearchPage("DNA");
 	}
 }
