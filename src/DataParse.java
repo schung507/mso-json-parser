@@ -58,52 +58,6 @@ public class DataParse {
 		return authorPage;
 	}
 
-	public static Author parseAuthor(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
-		
-		JSONReader.beginObject();
-		Author author = new Author();
-		
-		while (JSONReader.hasNext()) {
-			String key = JSONReader.nextName();
-			if (getDeclaredFieldNames(author).contains(key)) { // key is "name", "position", "email", or "description"
-				String val = JSONReader.nextString();
-				author.getClass().getDeclaredField(key).set(author, val);
-			} else {
-				JSONReader.skipValue();
-			}
-		}
-		JSONReader.endObject();
-		return author;
-		
-	}
-	
-	public static Post parsePost(JsonReader JSONReader) throws IOException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, SecurityException{
-		Post post = new Post();
-		JSONReader.beginObject();
-
-		while(JSONReader.hasNext()){
-			String key = JSONReader.nextName();
-			
-			if (getDeclaredFieldNames(post).contains(key)) {
-				String fieldTypeName = post.getClass().getDeclaredField(key).getType().getSimpleName();
-				Object val = null;
-				
-				if (fieldTypeName.equals("String")) { // key is "title", "content", "url", "excerpt", or "date"
-					val = Jsoup.parse(JSONReader.nextString()).text();
-				}
-				else if (fieldTypeName.equals("ArrayList")) { // key is "categories" or "tags"
-					val = parseTagsOrCategories(JSONReader);
-				} else if (fieldTypeName.equals("Author")){
-					val = parseAuthor(JSONReader);
-				}
-				post.getClass().getDeclaredField(key).set(post, val); 
-			} else {
-				JSONReader.skipValue();
-			}
-		}
-		JSONReader.endObject();
-		return post;
-	}
 //	/*
 	public static ArrayList<String> parseTagsOrCategories(JsonReader JSONReader) throws IOException{
 		ArrayList<String> tagsOrCategories = new ArrayList<String>();
