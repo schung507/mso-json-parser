@@ -12,7 +12,7 @@ public class DatePage {
 	
 	@Override
 	public String toString(){
-		String info = String.format("Search date: %s\n\n", date);
+		String info = String.format("Date: %s\n\n", date);
 		for (Post post : posts) {
 			info += String.format("%s\n", post);
 		}

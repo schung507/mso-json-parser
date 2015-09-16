@@ -12,7 +12,7 @@ public class TagPage {
 	
 	@Override
 	public String toString(){
-		String info = String.format("Search tag: %s\n\n", tag);
+		String info = String.format("Tag: %s\n\n", tag);
 		for (Post post : posts) {
 			info += String.format("%s\n", post);
 		}
