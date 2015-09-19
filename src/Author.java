@@ -6,18 +6,17 @@ public class Author {
 		email, 
 		description;
 	
-	int numposts;
+	int numposts = 0;
 	
 	public Author() {
 		
 	}
 		
-	public Author(String _name, String _position, String _email, String _description, int _numposts){
+	public Author(String _name, String _position, String _email, String _description){
 		name = _name;
 		nickname = _position;
 		email = _email;
 		description = _description;
-		numposts = _numposts;
 	}
 
 	
@@ -28,7 +27,7 @@ public class Author {
 	
 	@Override
 	public String toString() {
-		String info = String.format("name: %s\nposition: %s\nemail: %s\ndescription: %s\nnumposts: %s\n\n", name, nickname, email, description, numposts);
+		String info = String.format("name: %s\nposition: %s\nemail: %s\ndescription: %s\n\n", name, nickname, email, description);
 		return info;
 	}
 
